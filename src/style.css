@@ -188,4 +188,7 @@ h1 {
 	.gallery {
 		display: block;
 	}
+	.large_image_fixed {
+		width: 100%;
+	}
 }	
