@@ -1,65 +1,117 @@
 import './style.css'
-import template from './templates/countries.hbs'
-import prelist from './templates/prelist.hbs'
 import debounce from 'lodash.debounce'
-import { error } from "@pnotify/core"
-import "@pnotify/core/dist/PNotify.css"
-import "@pnotify/core/dist/BrightTheme.css"
-import "@pnotify/confirm/dist/PNotifyConfirm.css"
+import Masonry from 'masonry-layout'
 
 const input = document.querySelector('input');
-const body = document.getElementById('empty');
-const block = document.getElementById('whole_block');
+const gallery = document.querySelector('.gallery')
+const body = document.querySelector('body')
+const button = document.querySelector('button')
+const galleryElement = document.querySelector('.photo-card')
 
-input.addEventListener('input', debounce(searching, 500));
 
-const baseUrl = 'https://restcountries.eu/rest/v2/name/';
 
-function pNotifyNotice() {
-    error({
-      title: "Give me more letters!",
-      width: "320px",
-      delay: "500"
+let baseURL;
+let query = '';
+let pageNumber = 1;
+
+input.addEventListener('input', debounce((e) => {
+  query = e.target.value;
+  let newURL = `https://pixabay.com/api/?image_type=photo&orientation=horizontal&q=${query}&page=${pageNumber}&per_page=12&key=16604431-86fbec6f82ccbe895fd4f060b`;
+  baseURL = newURL;
+  gallery.innerHTML = '';
+  fetching(baseURL);
+  smoothScrolling();
+  
+}, 600));
+
+button.addEventListener('click', () => {
+  pageNumber += 1;
+  let newURL = `https://pixabay.com/api/?image_type=photo&orientation=horizontal&q=${query}&page=${pageNumber}&per_page=12&key=16604431-86fbec6f82ccbe895fd4f060b`;
+  baseURL = newURL;
+  fetching(baseURL);
+  smoothScrolling();
+  
+})
+
+//autoscrolling page down
+function smoothScrolling () {
+  setTimeout (() => {
+    window.scrollBy({
+      top: window.innerHeight,
+      left: 0,
+      behavior: 'smooth'
     });
-  }
+  }, 1050)
+}
 
-function searching(e) {
-    fetch(baseUrl + e.target.value)
-        .then(result => {
-            // console.log(result)
-            // сервер не в настроении - выходим
-            if (result.status === 404) {
-                return
-                }
-            // сервер с нами дружит, идем дальше    
-            if(result.status === 200) {
-                let parcedJson = result.json();
-                return parcedJson
-            }})
-        .then(result => {
-            // слишком много совпадений!
-            if (result.length >= 10) {
-                console.log('%c Too many countries finded', 'color: tomato');
-                body.innerHTML = prelist('');
-                pNotifyNotice()
-                return result
-            }
-            // выводим предварительных претендентов
-            if ((result.length < 10) && (result.length >= 2)) {
-                body.innerHTML = prelist(result);
-                result.map(mapped => {
-                    let mappedArrNames = mapped.name;
-                    return mappedArrNames})
-            }
-            // попадание в яблочко
-            if (result.length === 1) {
-                result.map(mapped => {
-                    let mappedArrName = mapped.name;
-                    console.log(`%c Your country is:  ${mappedArrName}`, 'color: #afa');
-                    body.innerHTML = template(mapped)
-                    })
-            }
-        })
-        .catch(err => console.log('%c Empty input! or Nothing matched!', 'color: chocolate'))  
-    }
-    
+
+function fetching(url) {
+  fetch(url)
+    .then(res => res.json())
+    .then(res => {
+      const result = res.hits;
+      //markup painting here
+      result.map(a => {
+        // <img id="img_enlarge" src="${a.webformatURL}" src-lg="${a.largeImageURL}" alt=""/>
+        gallery.insertAdjacentHTML('beforeend',
+        `<div id="img_enlarge" class="photo-card" style="background-image: url(${a.webformatURL});" src-lg="${a.largeImageURL}">
+
+        
+        <div class="stats">
+          <p class="stats-item">
+            <i class="material-icons">thumb_up</i>
+            ${a.likes}&nbsp;&nbsp;
+          </p>
+          <p class="stats-item">
+            <i class="material-icons">visibility</i>
+            ${a.views}&nbsp;&nbsp;
+          </p>
+          <p class="stats-item">
+            <i class="material-icons">comment</i>
+            ${a.comments}&nbsp;&nbsp;
+          </p>
+          <p class="stats-item">
+            <i class="material-icons">cloud_download</i>
+            ${a.downloads}&nbsp;&nbsp;
+          </p>
+        </div>
+      </div>
+      `
+        )
+      });
+      // showing of LOAD MORE button
+      button.style = 'display: block';
+      //enlarging of image to fullscreen
+      const currentImg = document.querySelectorAll('#img_enlarge');
+      currentImg.forEach(element => {
+          element.addEventListener('click', (e) => {
+              console.log(e)
+              const largeImgURL = e.target.getAttribute('src-lg');
+              body.insertAdjacentHTML('beforeend', '<div class="large_image_bgc"></div>')
+              gallery.insertAdjacentHTML('beforeend',
+              `<img class="large_image_fixed" src="${largeImgURL}" title="X">`)
+             
+                  // gallery.insertAdjacentHTML('beforeend', `<div class="close_sign">Close</div>`)
+                  const closeSign = document.querySelector('.large_image_fixed');
+                  function deleteLargeImg () {
+                    setTimeout(() => {
+                      document.querySelector('.large_image_fixed').remove();
+                      // document.querySelector('.close_sign').remove()
+                      document.querySelector('.large_image_bgc').remove()
+                    }, 150)
+                  }
+                  closeSign.addEventListener('click', deleteLargeImg);
+                  body.addEventListener('keyup', (e) => {
+                      if ((e.key === 'Escape') && (gallery.contains(closeSign))) {
+                          deleteLargeImg()
+                      }
+                  })
+
+          })
+      })
+      if (query === '') {
+        gallery.innerHTML = '';
+        button.style = 'display: none'
+      }
+    })
+}
