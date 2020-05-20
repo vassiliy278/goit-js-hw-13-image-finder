@@ -16,7 +16,7 @@ let pageNumber = 1;
 
 input.addEventListener('input', debounce((e) => {
   query = e.target.value;
-  let newURL = `https://pixabay.com/api/?image_type=photo&orientation=horizontal&q=${query}&page=${pageNumber}&per_page=12&key=16604431-86fbec6f82ccbe895fd4f060b`;
+  let newURL = `https://pixabay.com/api/?image_type=photo&orientation=horizontal&q=${query}&page=${pageNumber = 1}&per_page=12&key=16604431-86fbec6f82ccbe895fd4f060b`;
   baseURL = newURL;
   gallery.innerHTML = '';
   fetching(baseURL);
