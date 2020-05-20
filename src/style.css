@@ -191,4 +191,7 @@ h1 {
 	.large_image_fixed {
 		width: 100%;
 	}
+	.search_form input, .visible_btn {
+		font-size: 1rem;
+	}
 }	
