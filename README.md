@@ -1,2 +1,3 @@
-# goit-js-hw-13-image-finder
+# image-finder
+created feat. Pixabay API
 last vanilla day
