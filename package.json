@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/vassiliy278/goit-js-hw-12-countries#readme",
   "dependencies": {
-    "handlebars": "^4.7.6",
+    "handlebars": "^4.7.7",
     "handlebars-loader": "^1.7.1",
     "lodash.debounce": "^4.0.8",
     "masonry-layout": "^4.2.2",
